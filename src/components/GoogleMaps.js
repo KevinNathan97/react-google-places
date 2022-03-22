@@ -7,7 +7,7 @@ const GoogleMaps = (props) => {
     <div className="child">
       <Map
         style={{
-          height: "80%",
+          height: "70%",
           width: "80%",
           margin: "auto",
           marginTop: "40px",

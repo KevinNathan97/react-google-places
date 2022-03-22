@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { connect } from "react-redux";
+import { selectPlace } from "../redux";
 import { Map, Marker, GoogleApiWrapper } from "google-maps-react";
 import SearchBar from "./SearchBar";
 import PlacesAutocomplete, {
@@ -6,24 +8,21 @@ import PlacesAutocomplete, {
   getLatLng,
 } from "react-places-autocomplete";
 import GoogleMaps from "./GoogleMaps";
+import History from "./History";
 
 const GooglePlaces = (props) => {
-  console.log(props);
   const [address, setAddress] = useState("");
-  //   const [displayInfoWindow, setDisplayInfoWindow] = useState(false);
-  //   const [activeMarker, setActiveMarker] = useState({});
-  //   const [selectedPlace, setSelectedPlace] = useState({});
   const [mapCenter, setMapCenter] = useState({
     lat: 3.1237986035960517,
     lng: 101.62948964720643,
   });
 
   const handleChange = (address) => {
-    console.log(address);
     setAddress(address);
   };
 
   const handleSelect = async (address) => {
+    props.selectPlace(address);
     setAddress(address);
 
     try {
@@ -56,7 +55,7 @@ const GooglePlaces = (props) => {
 
             <div className="autocomplete-dropdown-container">
               {loading && <div>Loading...</div>}
-              {suggestions.map((suggestion) => {
+              {suggestions.map((suggestion, index) => {
                 const className = suggestion.active
                   ? "suggestion-item--active"
                   : "suggestion-item";
@@ -65,6 +64,7 @@ const GooglePlaces = (props) => {
                   : { backgroundColor: "#ffffff", cursor: "pointer" };
                 return (
                   <div
+                    key={index}
                     {...getSuggestionItemProps(suggestion, {
                       className,
                       style,
@@ -78,12 +78,27 @@ const GooglePlaces = (props) => {
           </div>
         )}
       </PlacesAutocomplete>
+      <History list={props.searchHistory} />
 
       <GoogleMaps mapCenter={mapCenter} />
     </div>
   );
 };
 
+const mapStateToProps = (state) => {
+  return {
+    address: state.address,
+    mapCenter: state.mapCenter,
+    searchHistory: state.searchHistory,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    selectPlace: (payload) => dispatch(selectPlace(payload)),
+  };
+};
+
 export default GoogleApiWrapper({
   apiKey: process.env.REACT_APP_API_KEY,
-})(GooglePlaces);
+})(connect(mapStateToProps, mapDispatchToProps)(GooglePlaces));
